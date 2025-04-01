@@ -584,11 +584,11 @@ export function sortNodesByLinkValue(nodeMap, value, order) {
     return nodes;
 }
 
-export function drawSankey(ref, width, height, nodes, links, kAlias, reductorKAlias, reductorQAlias, gapAAlias, gapQAlias, gapKAlias, appearingLinksAlias, nodeOrderByAlias, nodeOrderAlias) {
+export function drawSankey(ref, width, height, nodes, links, kAlias, reductorKAlias, reductorQAlias, gapAAlias, gapQAlias, gapKAlias, appearingLinksAlias, nodeOrderByAlias, nodeOrderAlias, orderingLinksAlias) {
     // [SETUP] Spatial constants
     const K = kAlias;
-    const REDUCTOR_Q = reductorQAlias/10;
-    const REDUCTOR_K = reductorKAlias/10;
+    const REDUCTOR_Q = reductorQAlias / 10;
+    const REDUCTOR_K = reductorKAlias / 10;
     const FACTOR = K / 2;
     const gapA = gapAAlias;
     const gapQ = gapQAlias;
@@ -596,7 +596,22 @@ export function drawSankey(ref, width, height, nodes, links, kAlias, reductorKAl
 
     // [SETUP] Orders
     const nodeOrder = { value: nodeOrderByAlias, order: nodeOrderAlias }
-    const linksOrder = [1, 2, 3];
+    let orderingLinks;
+    switch (orderingLinksAlias) {
+        case 1:
+            orderingLinks = [1, 2, 3];
+            break;
+        case 2:
+            orderingLinks = [2, 1, 3];
+            break;
+        case 3:
+            orderingLinks = [3, 1, 2];
+            break;
+        default:
+            orderingLinks = [1, 2, 3];
+    }
+
+    const linksOrder = orderingLinks;
 
     // [SETUP] Filters
     const appearingValues = appearingLinksAlias;
@@ -739,9 +754,11 @@ export function drawSankey(ref, width, height, nodes, links, kAlias, reductorKAl
         const pie = d3.pie().value(d => d.value);
         const arc = d3.arc().innerRadius(0).outerRadius(50);
 
+        const infoBoxX = node.id[0] === 'K' ? node.x - 210 : node.x + nodeWidth + 10;
+
         const infoBox = svg.append("g")
             .attr("class", "info-box")
-            .attr("transform", `translate(${node.x + nodeWidth + 10}, ${node.y})`)
+            .attr("transform", `translate(${infoBoxX}, ${node.y})`)
             .raise();
 
         infoBox.append("rect")

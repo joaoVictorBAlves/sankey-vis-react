@@ -1,18 +1,18 @@
-import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Sankey from './components/Sankey';
-import { generateDataset } from './components/Sankey/hooks/utils';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
-import { Box } from '@mui/material';
+import React from "react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import Sankey from "./components/Sankey";
+import { generateDataset } from "./components/Sankey/hooks/utils";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import Checkbox from "@mui/material/Checkbox";
+import ListItemText from "@mui/material/ListItemText";
+import { Box } from "@mui/material";
 
 const App = () => {
   const [nodes, setNodes] = React.useState([]);
@@ -38,28 +38,36 @@ const App = () => {
   const [percentage2, setPercentage2] = React.useState(40);
   const [percentage3, setPercentage3] = React.useState(60);
 
-
   const handleResize = () => {
     setWidth(window.innerWidth - 35);
     setHeight(window.innerHeight - 20);
   };
 
   React.useEffect(() => {
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   React.useEffect(() => {
-    const { nodes, links } = generateDataset(numA, numQ, numK, percentage1, percentage2, percentage3);
+    const { nodes, links } = generateDataset(
+      numA,
+      numQ,
+      numK,
+      percentage1,
+      percentage2,
+      percentage3
+    );
     setNodes(nodes);
     setLinks(links);
   }, [numA, numQ, numK, percentage1, percentage2, percentage3]);
 
   const handleApearingLinksChange = (event) => {
-    const { target: { value } } = event;
-    setApearingLinks(typeof value === 'string' ? value.split(',') : value);
+    const {
+      target: { value },
+    } = event;
+    setApearingLinks(typeof value === "string" ? value.split(",") : value);
   };
 
   const handleInputChange = (setter) => (e) => {
@@ -82,9 +90,11 @@ const App = () => {
         </Toolbar>
       </AppBar>
       <Container width={"100%"} sx={{ mx: 0 }}>
-        <Typography variant="h5" component="h1" style={{ marginTop: '20px' }}>Sankey Diagram</Typography>
+        <Typography variant="h5" component="h1" style={{ marginTop: "20px" }}>
+          Sankey Diagram
+        </Typography>
 
-        <Box
+        {/* <Box
           style={{
             marginBottom: "20px",
             marginTop: "30px",
@@ -142,7 +152,7 @@ const App = () => {
             sx={{ height: 30 }}
             InputProps={{ sx: { height: 30 } }}
           />
-        </Box>
+        </Box> */}
         <Box
           style={{
             marginBottom: "20px",
@@ -154,7 +164,7 @@ const App = () => {
           }}
         >
           <TextField
-            label="Height A"
+            label="Altura A"
             type="number"
             value={k}
             onChange={handleInputChange(setK)}
@@ -162,7 +172,7 @@ const App = () => {
             InputProps={{ sx: { height: 30 } }}
           />
           <TextField
-            label="Height Q"
+            label="Altura Q"
             type="number"
             value={reductorQ}
             onChange={handleInputChange(setReductorQ)}
@@ -170,16 +180,16 @@ const App = () => {
             InputProps={{ sx: { height: 30 } }}
           />
           <TextField
-            label="Height K"
+            label="Altura K"
             type="number"
             value={reductorK}
             onChange={handleInputChange(setReductorK)}
             sx={{ height: 30 }}
             InputProps={{ sx: { height: 30 } }}
           />
-          
+
           <TextField
-            label="Gap A"
+            label="Espaçamento A"
             type="number"
             value={gapA}
             onChange={handleInputChange(setGapA)}
@@ -187,7 +197,7 @@ const App = () => {
             InputProps={{ sx: { height: 30 } }}
           />
           <TextField
-            label="Gap Q"
+            label="Espaçamento Q"
             type="number"
             value={gapQ}
             onChange={handleInputChange(setGapQ)}
@@ -195,7 +205,7 @@ const App = () => {
             InputProps={{ sx: { height: 30 } }}
           />
           <TextField
-            label="Gap K"
+            label="Espaçamento K"
             type="number"
             value={gapK}
             onChange={handleInputChange(setGapK)}
@@ -214,7 +224,7 @@ const App = () => {
           }}
         >
           <FormControl style={{ minWidth: "200px", height: 30 }}>
-            <InputLabel>Filtrar</InputLabel>
+            <InputLabel>Filtrar por</InputLabel>
             <Select
               multiple
               value={apearingLinks}
@@ -225,7 +235,15 @@ const App = () => {
               {[1, 2, 3].map((link) => (
                 <MenuItem key={link} value={link}>
                   <Checkbox checked={apearingLinks.indexOf(link) > -1} />
-                  <ListItemText primary={link === 1 ? "Insuficiente" : link === 2 ? "Parcialmente Suficiente" : "Suficiente"} />
+                  <ListItemText
+                    primary={
+                      link === 1
+                        ? "Insuficiente"
+                        : link === 2
+                        ? "Parcialmente Suficiente"
+                        : "Suficiente"
+                    }
+                  />
                 </MenuItem>
               ))}
             </Select>
@@ -239,7 +257,9 @@ const App = () => {
               sx={{ height: 30 }}
             >
               <MenuItem value={1}>Quantidade de Insuficientes</MenuItem>
-              <MenuItem value={2}>Quantidade de Parcialmente Suficientes</MenuItem>
+              <MenuItem value={2}>
+                Quantidade de Parcialmente Suficientes
+              </MenuItem>
               <MenuItem value={3}>Quantidade de Suficientes</MenuItem>
             </Select>
           </FormControl>
@@ -269,8 +289,6 @@ const App = () => {
             </Select>
           </FormControl>
         </Box>
-      
-
 
         <Sankey
           width={width}
@@ -286,10 +304,11 @@ const App = () => {
           apearingLinks={apearingLinks}
           nodeOrderBy={nodeOrderBy}
           nodeOrder={nodeOrder}
+          orderingLinks={orderLinks}
         />
       </Container>
     </div>
   );
-}
+};
 
 export default App;
