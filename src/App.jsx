@@ -207,13 +207,9 @@ const App = () => {
               variant="h5"
               sx={{ flexGrow: 1 }}
             >
-              Sankey VIS
+              Sankey Chart
             </Typography>
           </Box>
-
-          <Typography fontFamily={"Poppins"} variant="body1">
-            Version 1.0
-          </Typography>
         </Toolbar>
       </AppBar>
 
