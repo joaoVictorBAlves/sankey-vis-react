@@ -1,4 +1,4 @@
-import { red } from "@mui/material/colors";
+/* eslint-disable no-unused-vars */
 import * as d3 from "d3";
 
 /**
@@ -674,8 +674,8 @@ export function drawSankey(
 ) {
   // [SETUP] Spatial constants
   const K = kAlias;
-  const REDUCTOR_Q = reductorQAlias / 10;
-  const REDUCTOR_K = reductorKAlias / 10;
+  const REDUCTOR_Q = reductorQAlias;
+  const REDUCTOR_K = reductorKAlias;
   const FACTOR = K / 2;
   const gapA = gapAAlias;
   const gapQ = gapQAlias;
@@ -1074,7 +1074,6 @@ export function drawSankey(
       updateLinksAndNodesByLink(link, 1, nodeColorOver, Vs, As, "over");
 
       // // Se o source.id começar com "A", desenha uma linha extra em vermelho
-      console.log(link);
       const targetNode = nodeMap.find((node) => node.id == link.target);
       const linksAfter = targetNode.sourceLinks.filter(
         (l) => l.value == link.value
@@ -1126,7 +1125,6 @@ export function drawSankey(
         Vs._groups[0].filter((node) => node.__data__.id == link.target)
       );
       finalNodes.forEach((node) => {
-        console.log(node);
         d3.select(node[0]).select("rect").style("fill", nodeColorOver);
       });
     })

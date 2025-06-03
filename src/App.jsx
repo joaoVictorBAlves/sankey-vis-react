@@ -1,120 +1,121 @@
 // IMPORTS (sem mudanças)
-import React, { useEffect } from "react";
+import { Box, Button, Divider, Modal } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import Sankey from "./components/Sankey";
-import { generateDataset } from "./components/Sankey/hooks/utils";
-import TextField from "@mui/material/TextField";
+import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import ListItemText from "@mui/material/ListItemText";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import Checkbox from "@mui/material/Checkbox";
-import ListItemText from "@mui/material/ListItemText";
-import { Box, Button, Modal, Divider } from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import React, { useEffect } from "react";
+import Sankey from "./components/Sankey";
+import { generateDataset } from "./components/Sankey/hooks/utils";
+import { AccountTree } from "@mui/icons-material";
+import { calculateLayoutParameters } from "./components/Sankey/hooks/calculateLayoutParameters";
 
-function calculateSankeyParameters({
-  availableHeight,
-  nodes,
-  links,
-  minLinkHeight,
-}) {
-  const A_nodes = nodes.A;
-  const Q_nodes = nodes.Q;
-  const K_nodes = nodes.K;
+// function calculateSankeyParameters({
+//   availableHeight,
+//   nodes,
+//   links,
+//   minLinkHeight,
+// }) {
+//   const A_nodes = nodes.A;
+//   const Q_nodes = nodes.Q;
+//   const K_nodes = nodes.K;
 
-  const countA = A_nodes.length;
-  const countQ = Q_nodes.length;
-  const countK = K_nodes.length;
+//   const countA = A_nodes.length;
+//   const countQ = Q_nodes.length;
+//   const countK = K_nodes.length;
 
-  const totalLinks = links.length;
-  const avgLinkWeight = 0.5;
+//   const totalLinks = links.length;
+//   const avgLinkWeight = 0.5;
 
-  const sumTargetLinksQ = Q_nodes.reduce(
-    (sum, q) => sum + (q.targetLinks?.length || 0),
-    0
-  );
-  const sumSourceLinksK = K_nodes.reduce(
-    (sum, k) => sum + (k.sourceLinks?.length || 0),
-    0
-  );
+//   const sumTargetLinksQ = Q_nodes.reduce(
+//     (sum, q) => sum + (q.targetLinks?.length || 0),
+//     0
+//   );
+//   const sumSourceLinksK = K_nodes.reduce(
+//     (sum, k) => sum + (k.sourceLinks?.length || 0),
+//     0
+//   );
 
-  const densityA = countA / availableHeight;
-  const densityQ = sumTargetLinksQ / availableHeight;
-  const densityK = sumSourceLinksK / availableHeight;
+//   const densityA = countA / availableHeight;
+//   const densityQ = sumTargetLinksQ / availableHeight;
+//   const densityK = sumSourceLinksK / availableHeight;
 
-  // Estimar K inicial
-  let K;
-  if (countA >= countQ && countA >= countK) {
-    K = availableHeight / (3 * countA);
-  } else {
-    K = availableHeight / (totalLinks * avgLinkWeight);
-  }
+//   // Estimar K inicial
+//   let K;
+//   if (countA >= countQ && countA >= countK) {
+//     K = availableHeight / (3 * countA);
+//   } else {
+//     K = availableHeight / (totalLinks * avgLinkWeight);
+//   }
 
-  // Redutor r_Q
-  const maxLinksPerQ = Math.max(
-    ...Q_nodes.map((q) => q.targetLinks?.length || 0)
-  );
-  const r_Q = 1 / (1 + Math.log(maxLinksPerQ || 1));
+//   // Redutor r_Q
+//   const maxLinksPerQ = Math.max(
+//     ...Q_nodes.map((q) => q.targetLinks?.length || 0)
+//   );
+//   const r_Q = 1 / (1 + Math.log(maxLinksPerQ || 1));
 
-  // Redutor r_K
-  const allKLinks = K_nodes.map((k) => k.sourceLinks?.length || 0);
-  const sortedKLinks = [...allKLinks].sort((a, b) => a - b);
-  const medianKLinks = sortedKLinks[Math.floor(sortedKLinks.length / 2)] || 1;
-  const r_K = minLinkHeight / (medianKLinks * K);
+//   // Redutor r_K
+//   const allKLinks = K_nodes.map((k) => k.sourceLinks?.length || 0);
+//   const sortedKLinks = [...allKLinks].sort((a, b) => a - b);
+//   const medianKLinks = sortedKLinks[Math.floor(sortedKLinks.length / 2)] || 1;
+//   const r_K = minLinkHeight / (medianKLinks * K);
 
-  // Estimar altura total dos nós
-  const totalNodeHeight = countA * K + countQ * K * r_Q + countK * K * r_K;
+//   // Estimar altura total dos nós
+//   const totalNodeHeight = countA * K + countQ * K * r_Q + countK * K * r_K;
 
-  const remainingSpace = availableHeight - totalNodeHeight;
-  const totalNodes = countA + countQ + countK;
-  const gap_base = remainingSpace / (totalNodes - 1);
+//   const remainingSpace = availableHeight - totalNodeHeight;
+//   const totalNodes = countA + countQ + countK;
+//   const gap_base = remainingSpace / (totalNodes - 1);
 
-  const avgDensity = (densityA + densityQ + densityK) / 3;
+//   const avgDensity = (densityA + densityQ + densityK) / 3;
 
-  const gap_A = gap_base * (densityA / avgDensity);
-  const gap_Q = gap_base * (1 - r_Q);
-  const gap_K = gap_base * (1 - r_K);
+//   const gap_A = gap_base * (densityA / avgDensity);
+//   const gap_Q = gap_base * (1 - r_Q);
+//   const gap_K = gap_base * (1 - r_K);
 
-  // Restrição: garantir altura mínima dos links
-  const minReducer = Math.min(r_Q, r_K);
-  const minKRequired = minLinkHeight / (minReducer || 0.1);
-  if (K < minKRequired) K = minKRequired;
+//   // Restrição: garantir altura mínima dos links
+//   const minReducer = Math.min(r_Q, r_K);
+//   const minKRequired = minLinkHeight / (minReducer || 0.1);
+//   if (K < minKRequired) K = minKRequired;
 
-  // Verificação de overflow
-  let totalHeight =
-    countA * K +
-    countQ * K * r_Q +
-    countK * K * r_K +
-    (totalNodes - 1) * gap_base;
-  if (totalHeight > availableHeight) {
-    const overflow = totalHeight - availableHeight;
-    K = K - overflow / (totalNodes * 3);
-  }
+//   // Verificação de overflow
+//   let totalHeight =
+//     countA * K +
+//     countQ * K * r_Q +
+//     countK * K * r_K +
+//     (totalNodes - 1) * gap_base;
+//   if (totalHeight > availableHeight) {
+//     const overflow = totalHeight - availableHeight;
+//     K = K - overflow / (totalNodes * 3);
+//   }
 
-  // Iteração até convergir (simplificada com 3 ciclos máx)
-  for (let i = 0; i < 3; i++) {
-    const r_K_new = minLinkHeight / (medianKLinks * K);
-    const totalNodeHeightNew =
-      countA * K + countQ * K * r_Q + countK * K * r_K_new;
-    const K_new = K * ((0.95 * availableHeight) / totalNodeHeightNew);
+//   // Iteração até convergir (simplificada com 3 ciclos máx)
+//   for (let i = 0; i < 3; i++) {
+//     const r_K_new = minLinkHeight / (medianKLinks * K);
+//     const totalNodeHeightNew =
+//       countA * K + countQ * K * r_Q + countK * K * r_K_new;
+//     const K_new = K * ((0.95 * availableHeight) / totalNodeHeightNew);
 
-    if (Math.abs(K_new - K) / K < 0.02) break;
+//     if (Math.abs(K_new - K) / K < 0.02) break;
 
-    K = K_new;
-  }
+//     K = K_new;
+//   }
 
-  return {
-    K: Math.round(K),
-    r_Q: +r_Q.toFixed(3),
-    r_K: +r_K.toFixed(3),
-    gap_A: Math.round(gap_A),
-    gap_Q: Math.round(gap_Q),
-    gap_K: Math.round(gap_K),
-  };
-}
+//   return {
+//     K: Math.round(K),
+//     r_Q: +r_Q.toFixed(3),
+//     r_K: +r_K.toFixed(3),
+//     gap_A: Math.round(gap_A),
+//     gap_Q: Math.round(gap_Q),
+//     gap_K: Math.round(gap_K),
+//   };
+// }
 
 const App = () => {
   // STATES (sem mudanças)
@@ -137,12 +138,12 @@ const App = () => {
 
   const [openModal, setOpenModal] = React.useState(false);
 
-  const [numA, setNumA] = React.useState(10);
-  const [numQ, setNumQ] = React.useState(5);
-  const [numK, setNumK] = React.useState(5);
-  const [percentage1, setPercentage1] = React.useState(20);
-  const [percentage2, setPercentage2] = React.useState(40);
-  const [percentage3, setPercentage3] = React.useState(60);
+  const numA = 10;
+  const numQ = 5;
+  const numK = 5;
+  const percentage1 = 20;
+  const percentage2 = 40;
+  const percentage3 = 60;
 
   React.useEffect(() => {
     const { nodes, links } = generateDataset(
@@ -157,32 +158,20 @@ const App = () => {
     setLinks(links);
   }, [numA, numQ, numK, percentage1, percentage2, percentage3]);
 
-  // useEffect(() => {
-  //   const { K, r_Q, r_K, gap_A, gap_Q, gap_K } = calculateSankeyParameters({
-  //     availableHeight: 200,
-  //     nodes: {
-  //       A: nodes.filter((node) => node.id[0] === "A"),
-  //       Q: nodes.filter((node) => node.id[0] === "Q"),
-  //       K: nodes.filter((node) => node.id[0] === "K"),
-  //     },
-  //     links: links,
-  //     minLinkHeight: 5,
-  //   });
+  useEffect(() => {
+    const { K, GapA, rQ, GapQ, rK, GapK } = calculateLayoutParameters(
+      nodes,
+      links,
+      500
+    );
 
-  //   console.log("K", K);
-  //   console.log("r_Q", r_Q);
-  //   console.log("r_K", r_K);
-  //   console.log("gap_A", gap_A);
-  //   console.log("gap_Q", gap_Q);
-  //   console.log("gap_K", gap_K);
-
-  //   setK(K);
-  //   setReductorK(r_K);
-  //   setReductorQ(r_Q);
-  //   setGapA(gap_A);
-  //   setGapQ(gap_Q);
-  //   setGapK(gap_K);
-  // }, [nodes, links, height]);
+    setK(K);
+    setReductorK(rK);
+    setReductorQ(rQ);
+    setGapA(GapA);
+    setGapQ(GapQ);
+    setGapK(GapK);
+  }, [nodes, links, height]);
 
   const handleResize = () => {
     setWidth(window.innerWidth - 300);
@@ -209,11 +198,22 @@ const App = () => {
   return (
     <>
       <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Sankey VIS
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AccountTree />
+            <Typography
+              fontFamily={"Poppins"}
+              fontWeight={600}
+              variant="h5"
+              sx={{ flexGrow: 1 }}
+            >
+              Sankey VIS
+            </Typography>
+          </Box>
+
+          <Typography fontFamily={"Poppins"} variant="body1">
+            Version 1.0
           </Typography>
-          <Typography variant="body1">Version 1.0</Typography>
         </Toolbar>
       </AppBar>
 
@@ -229,32 +229,38 @@ const App = () => {
             overflowY: "auto",
           }}
         >
-          <Typography variant="h6" gutterBottom>
+          <Typography fontFamily={"Poppins"} variant="h6" gutterBottom>
             Legenda
           </Typography>
           <Box display="flex" flexDirection="column" mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
               <Box width={20} height={20} bgcolor="#E07121" />
-              <Typography variant="body2">Insuficiente</Typography>
+              <Typography fontFamily={"Poppins"} variant="body2">
+                Insuficiente
+              </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
               <Box width={20} height={20} bgcolor="#916BD4" />
-              <Typography variant="body2">Parcialmente Suficiente</Typography>
+              <Typography fontFamily={"Poppins"} variant="body2">
+                Parcialmente Suficiente
+              </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
               <Box width={20} height={20} bgcolor="#68E4C9" />
-              <Typography variant="body2">Suficiente</Typography>
+              <Typography fontFamily={"Poppins"} variant="body2">
+                Suficiente
+              </Typography>
             </Box>
           </Box>
 
           <Divider sx={{ my: 2 }} />
 
-          <Typography variant="h6" gutterBottom>
+          <Typography fontFamily={"Poppins"} variant="h6" gutterBottom>
             Filtros
           </Typography>
 
           <FormControl fullWidth margin="dense">
-            <InputLabel>Filtrar por</InputLabel>
+            <InputLabel sx={{ fontFamily: "Poppins" }}>Filtrar por</InputLabel>
             <Select
               multiple
               value={apearingLinks}
@@ -279,7 +285,7 @@ const App = () => {
           </FormControl>
 
           <FormControl fullWidth margin="dense">
-            <InputLabel>Ordenar por</InputLabel>
+            <InputLabel sx={{ fontFamily: "Poppins" }}>Ordenar por</InputLabel>
             <Select
               value={nodeOrderBy}
               onChange={(e) => setNodeOrderBy(Number(e.target.value))}
@@ -291,7 +297,7 @@ const App = () => {
           </FormControl>
 
           <FormControl fullWidth margin="dense">
-            <InputLabel>Ordem</InputLabel>
+            <InputLabel sx={{ fontFamily: "Poppins" }}>Ordem</InputLabel>
             <Select
               value={nodeOrder}
               onChange={(e) => setNodeOrder(e.target.value)}
@@ -302,7 +308,7 @@ const App = () => {
           </FormControl>
 
           <FormControl fullWidth margin="dense">
-            <InputLabel>Destacar</InputLabel>
+            <InputLabel sx={{ fontFamily: "Poppins" }}>Destacar</InputLabel>
             <Select
               value={orderLinks}
               onChange={(e) => setOrderLinks(e.target.value)}
@@ -316,7 +322,7 @@ const App = () => {
           <Button
             variant="outlined"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, fontFamily: "Poppins" }}
             onClick={() => setOpenModal(true)}
           >
             Ajustar Dimensões
@@ -324,11 +330,11 @@ const App = () => {
         </Box>
         {/* CONTEÚDO À DIREITA */}
         <Box flex={1} p={2}>
-          <Typography variant="h5" gutterBottom>
+          <Typography fontFamily={"Poppins"} variant="h5" gutterBottom>
             Avaliação de Matemática 2º Sobral
           </Typography>
 
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography fontFamily={"Poppins"} variant="subtitle2" gutterBottom>
             <strong>Relações:</strong> A - Alunos | Q - Questões | K -
             Habilidades
           </Typography>
@@ -375,36 +381,42 @@ const App = () => {
           <TextField
             label="Altura A"
             type="number"
+            inputProps={{ step: "any" }}
             value={k}
             onChange={handleInputChange(setK)}
           />
           <TextField
             label="Altura Q"
             type="number"
+            inputProps={{ step: "any" }}
             value={reductorQ}
             onChange={handleInputChange(setReductorQ)}
           />
           <TextField
             label="Altura K"
             type="number"
+            inputProps={{ step: "any" }}
             value={reductorK}
             onChange={handleInputChange(setReductorK)}
           />
           <TextField
             label="Espaçamento A"
             type="number"
+            inputProps={{ step: "any" }}
             value={gapA}
             onChange={handleInputChange(setGapA)}
           />
           <TextField
             label="Espaçamento Q"
             type="number"
+            inputProps={{ step: "any" }}
             value={gapQ}
             onChange={handleInputChange(setGapQ)}
           />
           <TextField
             label="Espaçamento K"
             type="number"
+            inputProps={{ step: "any" }}
             value={gapK}
             onChange={handleInputChange(setGapK)}
           />
