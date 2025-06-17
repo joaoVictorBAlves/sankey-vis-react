@@ -165,18 +165,39 @@ const App = () => {
       500
     );
 
-    setK(K);
-    setReductorK(rK);
-    setReductorQ(rQ);
-    setGapA(GapA);
-    setGapQ(GapQ);
-    setGapK(GapK);
+    // Só atualiza se todos os valores forem positivos
+    if (K > 0 && rK > 0 && rQ > 0 && GapA > 0) {
+      setK(K);
+      setReductorK(rK);
+      setReductorQ(rQ);
+      setGapA(GapA);
+      setGapQ(gapA * rQ * 2);
+      setGapK(gapK * rK * 2);
+    }
+    const heightA =
+      K * nodes.filter((x) => x.id[0] === "A").length +
+      GapA * (nodes.filter((x) => x.id[0] === "A").length - 1);
+    console.log("Height A:", heightA);
+
+    console.log("Calculated Parameters:", {
+      K,
+      GapA,
+      rQ,
+      GapQ,
+      rK,
+      GapK,
+    });
   }, [nodes, links, height]);
 
   const handleResize = () => {
     setWidth(window.innerWidth - 300);
     setHeight(window.innerHeight - 100);
   };
+
+  useEffect(() => {
+    console.log("height", height);
+    console.log("width", width);
+  }, [height, width]);
 
   React.useEffect(() => {
     window.addEventListener("resize", handleResize);

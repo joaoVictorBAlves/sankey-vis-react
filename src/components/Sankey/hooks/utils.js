@@ -787,7 +787,7 @@ export function drawSankey(
   // Clear the SVG before drawing again
   d3.select(ref.current).selectAll("*").remove();
 
-  // [DRAW] create svg
+  // [DRAW] create svg with zoom and pan
   const svg = d3
     .select(ref.current)
     .append("svg")
@@ -795,7 +795,17 @@ export function drawSankey(
     .attr("height", height * 2) // Increase height for scrolling
     .attr("viewBox", `0 0 ${width} ${height * 2}`) // Adjust viewBox to match increased height
     .attr("preserveAspectRatio", "xMidYMid meet")
-    .style("overflow", "visible");
+    .call(
+      d3
+        .zoom()
+        .scaleExtent([0.5, 5])
+        .on("zoom", function (event) {
+          g.attr("transform", event.transform);
+        })
+    );
+
+  // Create a group for all content to enable zoom/pan
+  const g = svg.append("g");
 
   d3.select("#sankey")
     .style("width", "100%")
@@ -804,7 +814,7 @@ export function drawSankey(
     .style("overflow-x", "hidden");
 
   // [DRAW] create nodes Vs (Nodes)
-  const Vs = svg
+  const Vs = g
     .selectAll(".node")
     .data(Object.values(nodeMapFiltered))
     .enter()
@@ -857,7 +867,7 @@ export function drawSankey(
     const infoBoxX =
       node.id[0] === "K" ? node.x - 210 : node.x + nodeWidth + 10;
 
-    const infoBox = svg
+    const infoBox = g
       .append("g")
       .attr("class", "info-box")
       .attr("transform", `translate(${infoBoxX}, ${node.y})`)
@@ -1016,7 +1026,7 @@ export function drawSankey(
     .x((d) => d.x)
     .y((d) => d.y);
 
-  const As = svg
+  const As = g
     .selectAll(".link")
     .data(filteredLinks)
     .enter()
@@ -1080,8 +1090,7 @@ export function drawSankey(
       );
       // based ond this links i want to draw a links starting in the same position x0 and y0 of the link and pointing to the respect x1 and y1 of the original link
       linksAfter.forEach((afterLink) => {
-        svg
-          .append("path")
+        g.append("path")
           .attr("class", "highlight-link")
           .attr("fill", () => {
             if (link.value == 1) return "#D06020";
@@ -1141,7 +1150,7 @@ export function drawSankey(
       const link = d3.select(this)._groups[0][0].__data__;
       updateLinksAndNodesByLink(link, 0.5, nodeColor, Vs, As, "out");
 
-      svg.selectAll(".highlight-link").remove();
+      g.selectAll(".highlight-link").remove();
       d3.selectAll("rect").style("fill", nodeColor);
     });
 }
