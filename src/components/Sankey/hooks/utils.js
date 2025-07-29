@@ -286,8 +286,8 @@ export function defineY0ForLinks(
             link.value == 1
               ? yOffset
               : link.value == 2
-              ? yOffset + K
-              : yOffset + 2 * K;
+                ? yOffset + K
+                : yOffset + 2 * K;
         });
       });
     } else if (key == "Q") {
@@ -533,47 +533,72 @@ export function updateLinksAndNodesByNode(
   if (node?.sourceLinks) conLinks.push(...node.sourceLinks);
 
   conLinks.forEach((link) => {
-    Vs._groups[0].forEach((node) => {
-      if (node.__data__.id == link.source || node.__data__.id == link.target)
-        conNodes.push(node.__data__);
+    Vs._groups[0].forEach((n) => {
+      if (n.__data__.id == link.source || n.__data__.id == link.target)
+        conNodes.push(n.__data__);
     });
   });
 
   if (node.id[0] != "Q") {
     conNodes.forEach((n) => {
-      if (node.id[0] == "K")
+      if (node.id[0] == "K") {
         if (n?.targetLinks) {
           conLinks.push(...n.targetLinks);
           n.targetLinks.forEach((l) => {
-            Vs._groups[0].forEach((node) => {
-              if (node.__data__.id == l.source) conNodes.push(node.__data__);
+            Vs._groups[0].forEach((v) => {
+              if (v.__data__.id == l.source) conNodes.push(v.__data__);
             });
           });
         }
-      // if (node.id[0] == "A")
-      //     if (n?.sourceLinks) {
-      //         console.log("n", n)
-      //         conLinks.push(...n.sourceLinks)
-      //         n.sourceLinks.forEach(l => {
-      //             Vs._groups[0].forEach(nn => {
-      //                 if (nn.__data__.id == l.target && nn.id[0] != node.id[0])
-      //                     conNodes.push(nn.__data__);
-      //             });
-      //         })
-      //     };
+      }
+
+      if (node.id[0] == "A") {
+        if (node?.sourceLinks) {
+          // Para cada link A → Q
+          node.sourceLinks.forEach((inceptionLink) => {
+            const qNode = Vs._groups[0].find(
+              (v) => v.__data__.id == inceptionLink.target && v.__data__.id[0] == "Q"
+            )?.__data__;
+
+            if (qNode) {
+              conLinks.push(inceptionLink); // adiciona o link A → Q
+              conNodes.push(qNode); // adiciona o nó Q
+
+              // Para cada link Q → K, adiciona somente se tiver o mesmo value
+              if (qNode?.sourceLinks) {
+                qNode.sourceLinks.forEach((qToKLink) => {
+                  if (qToKLink.value === inceptionLink.value) {
+                    conLinks.push(qToKLink);
+
+                    const kNode = Vs._groups[0].find(
+                      (v) => v.__data__.id == qToKLink.target && v.__data__.id[0] == "K"
+                    )?.__data__;
+
+                    if (kNode) {
+                      conNodes.push(kNode);
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+
+
     });
   }
 
-  // conNodes = conNodes.filter(n => n.id[0] !== node.id[0]);
+  conNodes = conNodes.filter((n) => n.id[0] !== node.id[0]);
 
-  // Update the fill color of the nodes
+  // Atualiza a cor dos nós conectados
   Vs._groups[0]
     .filter((node) => conNodes.includes(node.__data__))
     .forEach((node) => {
       d3.select(node).select("rect").style("fill", fillColor);
     });
 
-  // Update the opacity of the links
+  // Atualiza a opacidade e cor dos links conectados
   As._groups[0]
     .filter((linkElement) =>
       conLinks.some(
@@ -584,9 +609,9 @@ export function updateLinksAndNodesByNode(
       )
     )
     .forEach((linkElement) => {
-      d3.select(linkElement);
-      if (type == "over")
-        d3.select(linkElement)
+      const sel = d3.select(linkElement);
+      if (type == "over") {
+        sel
           .attr("fill", () => {
             if (linkElement.__data__.value == 1) return "#D06020";
             if (linkElement.__data__.value == 2) return "#7150B0";
@@ -594,8 +619,8 @@ export function updateLinksAndNodesByNode(
           })
           .attr("opacity", opacityValue)
           .raise();
-      else if (type == "out")
-        d3.select(linkElement)
+      } else if (type == "out") {
+        sel
           .attr("fill", () => {
             if (linkElement.__data__.value == 1) return "#E07121";
             if (linkElement.__data__.value == 2) return "#916BD4";
@@ -603,8 +628,10 @@ export function updateLinksAndNodesByNode(
           })
           .attr("opacity", opacityValue)
           .raise();
+      }
     });
 }
+
 
 /**
  * Sorts nodes based on the number of links with a specific value.
@@ -930,8 +957,7 @@ export function drawSankey(
       .style("text-anchor", "middle")
       .style("font-size", "12px")
       .text(
-        `Total Connections: ${
-          node.sourceLinks.length + node.targetLinks.length
+        `Total Connections: ${node.sourceLinks.length + node.targetLinks.length
         }`
       );
   });
@@ -947,8 +973,8 @@ export function drawSankey(
             d.id[0] == "Q"
               ? K * REDUCTOR_Q
               : d.id[0] == "K"
-              ? K * REDUCTOR_K
-              : K;
+                ? K * REDUCTOR_K
+                : K;
           let fLinks = links.filter(
             (link) =>
               (link.source == d.id || link.target == d.id) &&
@@ -982,8 +1008,8 @@ export function drawSankey(
             d.id[0] == "Q"
               ? K * REDUCTOR_Q
               : d.id[0] == "K"
-              ? K * REDUCTOR_K
-              : K;
+                ? K * REDUCTOR_K
+                : K;
           const fLinks = filteredLinks.filter(
             (link) => link.source == d.id || link.target == d.id
           );
@@ -1038,8 +1064,8 @@ export function drawSankey(
         d.target[0] == "Q"
           ? d.height * REDUCTOR_Q
           : d.target[0] == "K"
-          ? d.height * REDUCTOR_K
-          : d.height;
+            ? d.height * REDUCTOR_K
+            : d.height;
 
       const x0 = d.x0 + nodeWidth;
       const y0Top = d.y0 - sourceWidth / 2;
@@ -1106,8 +1132,8 @@ export function drawSankey(
               afterLink.target[0] == "Q"
                 ? afterLink.height * REDUCTOR_Q
                 : afterLink.target[0] == "K"
-                ? afterLink.height * REDUCTOR_K
-                : afterLink.height;
+                  ? afterLink.height * REDUCTOR_K
+                  : afterLink.height;
 
             const x0 = linksAfter[0].x0 + nodeWidth;
             const y0Top = link.y1 - (link.height * REDUCTOR_Q) / 2;
